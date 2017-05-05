@@ -9,7 +9,7 @@
  * @package WordPress
  */
 class MPSUM_Disable_Updates {
-	
+
 	/**
 	* Holds the class instance.
 	*
@@ -18,13 +18,13 @@ class MPSUM_Disable_Updates {
 	* @var MPSUM_Disable_Updates $instance
 	*/
 	private static $instance = null;
-	
+
 	/**
 	* Set a class instance.
 	*
 	* Set a class instance.
 	*
-	* @since 5.0.0 
+	* @since 5.0.0
 	* @access static
 	*
 	*/
@@ -32,8 +32,8 @@ class MPSUM_Disable_Updates {
 		if ( null == self::$instance ) {
 			self::$instance = new self;
 		}
-	} //end get_instance	
-	
+	} //end get_instance
+
 	/**
 	* Class constructor.
 	*
@@ -44,74 +44,74 @@ class MPSUM_Disable_Updates {
 	*
 	*/
 	private function __construct() {
-				
+
 		$core_options = MPSUM_Updates_Manager::get_options( 'core' );
-		
+
 		//Disable Footer Nag
 		if ( isset( $core_options[ 'misc_wp_footer' ] ) && 'off' === $core_options[ 'misc_wp_footer' ] ) {
 			add_filter( 'update_footer', '__return_empty_string', 11 );
 		}
-		
+
 		//Disable Browser Nag
 		if ( isset( $core_options[ 'misc_browser_nag' ] ) && 'off' === $core_options[ 'misc_browser_nag' ] ) {
 			add_action( 'wp_dashboard_setup', array( $this, 'disable_browser_nag' ), 9 );
 			add_action( 'wp_network_dashboard_setup', array( $this, 'disable_browser_nag' ), 9 );
 		}
-		
+
 		//Disable All Updates
 		if ( isset( $core_options[ 'all_updates' ] ) && 'off' == $core_options[ 'all_updates' ] ) {
 			new MPSUM_Disable_Updates_All();
-			return;	
+			return;
 		}
-		
+
 		//Disable WordPress Updates
 		if ( isset( $core_options[ 'core_updates' ] ) && 'off' == $core_options[ 'core_updates' ] ) {
 			new MPSUM_Disable_Updates_WordPress();
 		}
-		
+
 		//Disable Plugin Updates
 		if ( isset( $core_options[ 'plugin_updates' ] ) && 'off' == $core_options[ 'plugin_updates' ] ) {
 			new MPSUM_Disable_Updates_Plugins();
 		}
-		
+
 		//Disable Theme Updates
 		if ( isset( $core_options[ 'theme_updates' ] ) && 'off' == $core_options[ 'theme_updates' ] ) {
 			new MPSUM_Disable_Updates_Themes();
 		}
-		
+
 		//Disable Translation Updates
 		if ( isset( $core_options[ 'translation_updates' ] ) && 'off' == $core_options[ 'translation_updates' ] ) {
 			new MPSUM_Disable_Updates_Translations();
 		}
-		
+
 		//Enable Development Updates
 		if ( isset( $core_options[ 'automatic_development_updates' ] ) && 'on' == $core_options[ 'automatic_development_updates' ] ) {
 			add_filter( 'allow_dev_auto_core_updates', '__return_true', 50 );
 		} elseif( isset( $core_options[ 'automatic_development_updates' ] ) && 'off' == $core_options[ 'automatic_development_updates' ] ) {
 			add_filter( 'allow_dev_auto_core_updates', '__return_false', 50 );
 		}
-		
+
 		//Enable Core Major Updates
 		if ( isset( $core_options[ 'automatic_major_updates' ] ) && 'on' == $core_options[ 'automatic_major_updates' ] ) {
 			add_filter( 'allow_major_auto_core_updates', '__return_true', 50 );
 		} elseif( isset( $core_options[ 'automatic_major_updates' ] ) && 'off' == $core_options[ 'automatic_major_updates' ] ) {
 			add_filter( 'allow_major_auto_core_updates', '__return_false', 50 );
 		}
-		
+
 		//Enable Core Minor Updates
 		if ( isset( $core_options[ 'automatic_minor_updates' ] ) && 'on' == $core_options[ 'automatic_minor_updates' ] ) {
 			add_filter( 'allow_minor_auto_core_updates', '__return_true', 50 );
 		} elseif( isset( $core_options[ 'automatic_minor_updates' ] ) && 'off' == $core_options[ 'automatic_minor_updates' ] ) {
 			add_filter( 'allow_minor_auto_core_updates', '__return_false', 50 );
 		}
-		
+
 		//Enable Translation Updates
 		if ( isset( $core_options[ 'automatic_translation_updates' ] ) && 'on' == $core_options[ 'automatic_translation_updates' ] ) {
 			add_filter( 'auto_update_translation', '__return_true', 50 );
 		} elseif( isset( $core_options[ 'automatic_translation_updates' ] ) && 'off' == $core_options[ 'automatic_translation_updates' ] ) {
 			add_filter( 'auto_update_translation', '__return_false', 50 );
 		}
-		
+
 		//Disable the Update Notification
 		if ( isset( $core_options[ 'notification_core_update_emails' ] ) && 'on' == $core_options[ 'notification_core_update_emails' ] ) {
 			add_filter( 'auto_core_update_send_email', '__return_true', 50 );
@@ -124,15 +124,15 @@ class MPSUM_Disable_Updates {
 		}
 		if( isset( $core_options[ 'notification_core_update_emails_plugins' ] ) && 'off' == $core_options[ 'notification_core_update_emails_plugins' ] ) {
     		add_filter( 'send_update_notification_email', array( $this, 'maybe_disable_emails' ), 10, 3 );
-        } 
+        }
         if( isset( $core_options[ 'notification_core_update_emails_themes' ] ) && 'off' == $core_options[ 'notification_core_update_emails_themes' ] ) {
     		add_filter( 'send_update_notification_email', array( $this, 'maybe_disable_emails' ), 10, 3 );
         }
         if( isset( $core_options[ 'notification_core_update_emails_translations' ] ) && 'off' == $core_options[ 'notification_core_update_emails_translations' ] ) {
     		add_filter( 'send_update_notification_email', array( $this, 'maybe_disable_emails' ), 10, 3 );
         }
-		
-		
+
+
 		//Enable Plugin Auto-updates
 		if ( isset( $core_options[ 'plugin_updates' ] ) && 'on' == $core_options[ 'plugin_updates' ] ) {
 			if ( isset( $core_options[ 'automatic_plugin_updates' ] ) && 'on' == $core_options[ 'automatic_plugin_updates' ] ) {
@@ -143,8 +143,8 @@ class MPSUM_Disable_Updates {
 				add_filter( 'auto_update_plugin',  array( $this, 'automatic_updates_plugins' ), 50, 2 );
 			}
 		}
-		
-		
+
+
 		//Enable Theme Auto-updates
 		if ( isset( $core_options[ 'theme_updates' ] ) && 'on' == $core_options[ 'theme_updates' ] ) {
 			if ( isset( $core_options[ 'automatic_theme_updates' ] ) && 'on' == $core_options[ 'automatic_theme_updates' ] ) {
@@ -155,26 +155,30 @@ class MPSUM_Disable_Updates {
 				add_filter( 'auto_update_theme',  array( $this, 'automatic_updates_theme' ), 50, 2 );
 			}
 		}
-		
+
 		//Automatic Updates E-mail Address
 		add_filter( 'automatic_updates_debug_email', array( $this, 'maybe_change_automatic_update_email' ), 50 );
 		add_filter( 'auto_core_update_email', array( $this, 'maybe_change_automatic_update_email' ), 50 );
-		
-						
+
+
 		//Prevent updates on themes/plugins
 		add_filter( 'site_transient_update_plugins', array( $this, 'disable_plugin_notifications' ), 50 );
 		add_filter( 'site_transient_update_themes', array( $this, 'disable_theme_notifications' ), 50 );
 		add_filter( 'http_request_args', array( $this, 'http_request_args_remove_plugins_themes' ), 5, 2 );
-		
+
+		// To check or not check version control installed
+		if ( isset( $core_options[ 'wp_vcs_checkout' ] ) && 'on' == $core_options[ 'wp_vcs_checkout' ] ) {
+			add_filter( 'automatic_updates_is_vcs_checkout', array( $this, 'nf_auto_update_is_vcs_checkout' ), 10, 2 );
+		}
 	} //end constructor
-	
+
 	/**
 	* Maybe change automatic update email
 	*
 	* @since 6.1.0
 	* @access public
 	* @see __construct
-	* 
+	*
 	* @param array $email array
 	*
 	* @return array email array
@@ -194,7 +198,7 @@ class MPSUM_Disable_Updates {
 		}
 		return $email;
 	}
-	
+
 	/**
 	* Maybe disable updates.
 	*
@@ -203,7 +207,7 @@ class MPSUM_Disable_Updates {
 	* @since 5.2.0
 	* @access public
 	* @see __construct
-	* 
+	*
 	* @param bool Whether to disable or not
 	* @param type ( theme, plugin , translation )
 	* @param obj wp update object
@@ -213,22 +217,22 @@ class MPSUM_Disable_Updates {
         $core_options = MPSUM_Updates_Manager::get_options( 'core' );
         if( isset( $core_options[ 'notification_core_update_emails_plugins' ] ) && 'off' == $core_options[ 'notification_core_update_emails_plugins' ] && $type == 'plugin' ) {
              return false;
-        } 
+        }
         if( isset( $core_options[ 'notification_core_update_emails_themes' ] ) && 'off' == $core_options[ 'notification_core_update_emails_themes' ] && $type == 'theme' ) {
              return false;
-        } 
+        }
         if( isset( $core_options[ 'notification_core_update_emails_translations' ] ) && 'off' == $core_options[ 'notification_core_update_emails_translations' ] && $type == 'translation' ) {
              return false;
         }
         return $bool;
-        
+
     }
 	/**
 	* Disable the out-of-date browser nag on the WordPress Dashboard.
 	*
 	* Disable the out-of-date browser nag on the WordPress Dashboard.
 	*
-	* @since 5.0.0 
+	* @since 5.0.0
 	* @access public
 	* @see __construct
 	* @internal uses wp_dashboard_setup action on single-site, wp_network_dashboard_setup action on multisite
@@ -238,13 +242,13 @@ class MPSUM_Disable_Updates {
 		remove_meta_box( 'dashboard_browser_nag', 'dashboard-network', 'normal' );
 		remove_meta_box( 'dashboard_browser_nag', 'dashboard', 'normal' );
 	}
-	
+
 	/**
 	* Enables plugin automatic updates on an individual basis.
 	*
 	* Enables plugin automatic updates on an individual basis.
 	*
-	* @since 5.0.0 
+	* @since 5.0.0
 	* @access public
 	* @see __construct
 	* @internal uses auto_update_plugin filter
@@ -260,13 +264,13 @@ class MPSUM_Disable_Updates {
 		}
 		return false;
 	}
-	
+
 	/**
 	* Enables theme automatic updates on an individual basis.
 	*
 	* Enables theme automatic updates on an individual basis.
 	*
-	* @since 5.0.0 
+	* @since 5.0.0
 	* @access public
 	* @see __construct
 	* @internal uses auto_update_theme filter
@@ -282,13 +286,13 @@ class MPSUM_Disable_Updates {
 		}
 		return false;
 	}
-	
+
 	/**
 	* Disables plugin updates on an individual basis.
 	*
 	* Disables plugin updates on an individual basis.
 	*
-	* @since 5.0.0 
+	* @since 5.0.0
 	* @access public
 	* @see __construct
 	* @internal uses site_transient_update_plugins filter
@@ -298,20 +302,20 @@ class MPSUM_Disable_Updates {
 	*/
 	public function disable_plugin_notifications( $plugins ) {
 		if ( !isset( $plugins->response ) || empty( $plugins->response ) ) return $plugins;
-		
+
 		$plugin_options = MPSUM_Updates_Manager::get_options( 'plugins' );
 		foreach( $plugin_options as $plugin ) {
 			unset( $plugins->response[ $plugin ] );
 		}
 		return $plugins;
 	}
-	
+
 	/**
 	* Disables theme updates on an individual basis.
 	*
 	* Disables theme updates on an individual basis.
 	*
-	* @since 5.0.0 
+	* @since 5.0.0
 	* @access public
 	* @see __construct
 	* @internal uses site_transient_update_themes filter
@@ -321,20 +325,20 @@ class MPSUM_Disable_Updates {
 	*/
 	public function disable_theme_notifications( $themes ) {
 		if ( !isset( $themes->response ) || empty( $themes->response ) ) return $themes;
-		
+
 		$theme_options = MPSUM_Updates_Manager::get_options( 'themes' );
 		foreach( $theme_options as $theme ) {
 			unset( $themes->response[ $theme ] );
 		}
 		return $themes;
 	}
-	
+
 	/**
 	* Disables theme and plugin http requests on an individual basis.
 	*
 	* Disables theme and plugin http requests on an individual basis.
 	*
-	* @since 5.0.0 
+	* @since 5.0.0
 	* @access public
 	* @see __construct
 	* @internal uses http_request_args filter
@@ -345,7 +349,7 @@ class MPSUM_Disable_Updates {
 	*/
 	public function http_request_args_remove_plugins_themes( $r, $url ) {
 		if ( 0 !== strpos( $url, 'https://api.wordpress.org/plugins/update-check/1.1/' ) ) return $r;
-		
+
 		if ( isset( $r[ 'body' ][ 'plugins' ] ) ) {
 			$r_plugins = json_decode( $r[ 'body' ][ 'plugins' ], true );
 			$plugin_options = MPSUM_Updates_Manager::get_options( 'plugins' );
@@ -368,5 +372,23 @@ class MPSUM_Disable_Updates {
 		}
 		return $r;
 	}
-	
+
+	/**
+	* Enable or disable wordpress check for version control detection.
+	*
+	* @since 6.4.0
+	* @access public
+	* @see __construct
+	* @internal uses automatic_updates_is_vcs_checkout filter
+	*
+	* @param bool $checkout  Whether a VCS checkout was discovered at $context
+	*                        or ABSPATH, or anywhere higher.
+	* @param string $context The filesystem context (a path) against which
+	*                        filesystem status should be checked.
+	* @return bool whether to enable or disable check for version control
+	*/
+	public function nf_auto_update_is_vcs_checkout( $checkout, $context ) {
+		return false;
+	}
+
 }

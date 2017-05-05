@@ -17,7 +17,7 @@ class MPSUM_Admin_Advanced {
 	* @var string $slug
 	*/
 	private $slug = '';
-	
+
 	/**
 	* Holds the tab name
 	*
@@ -26,7 +26,7 @@ class MPSUM_Admin_Advanced {
 	* @var string $tab
 	*/
 	private $tab = 'advanced';
-	
+
 	/**
 	* Class constructor.
 	*
@@ -40,16 +40,16 @@ class MPSUM_Admin_Advanced {
 	public function __construct( $slug = '' ) {
 		$this->slug = $slug;
 		//Admin Tab Actions
-		add_action( 'mpsum_admin_tab_advanced', array( $this, 'tab_output' ) );	
+		add_action( 'mpsum_admin_tab_advanced', array( $this, 'tab_output' ) );
 		add_action( 'admin_init', array( $this, 'maybe_save_options' ) );
 	}
-		
+
 	/**
 	* Determine whether the save the advanced options or not.
 	*
 	* Determine whether the save the advanced options or not.
 	*
-	* @since 5.0.0 
+	* @since 5.0.0
 	* @access public
 	* @see __construct
 	* @internal Uses admin_init action
@@ -78,13 +78,13 @@ class MPSUM_Admin_Advanced {
 				break;
 			case 'mpsum_reset_options':
 				check_admin_referer( 'mpsum_reset_options', '_mpsum' );
-				
+
 				// Reset options
 				MPSUM_Updates_Manager::update_options( array() );
-				
+
 				// Remove table version
 				delete_site_option( 'mpsum_log_table_version' );
-				
+
 				// Remove logs table
 				global $wpdb;
                 $tablename = $wpdb->base_prefix . 'eum_logs';
@@ -97,6 +97,18 @@ class MPSUM_Admin_Advanced {
                 wp_schedule_single_event( time() + 10, 'wp_version_check' );
                 wp_schedule_single_event( time() + 10, 'wp_update_themes' );
                 wp_schedule_single_event( time() + 45, 'wp_maybe_auto_update' );
+                break;
+            case 'mpsum_disable_git_checkout':
+                check_admin_referer( 'mpsum_force_git', '_mpsum' );
+                $options = MPSUM_Updates_Manager::get_options( 'core' );
+                $options[ 'wp_vcs_checkout' ] = 'on';
+                MPSUM_Updates_Manager::update_options( $options, 'core' );
+                break;
+            case 'mpsum_enable_git_checkout':
+                check_admin_referer( 'mpsum_force_git', '_mpsum' );
+                $options = MPSUM_Updates_Manager::get_options( 'core' );
+                $options[ 'wp_vcs_checkout' ] = 'off';
+                MPSUM_Updates_Manager::update_options( $options, 'core' );
                 break;
             case 'mpsum_enable_logs':
                 check_admin_referer( 'mpsum_logs', '_mpsum' );
@@ -116,35 +128,35 @@ class MPSUM_Admin_Advanced {
                 MPSUM_Logs::clear();
                 break;
 			default:
-				return;	
+				return;
 		}
-		
+
 		//Redirect args
 		$query_args = array();
 		$query_args[ 'updated' ] = "1";
 		$query_args[ 'tab' ] = $this->tab;
 		$query_args[ 'mpaction' ] = $action;
-		
-				
+
+
 		//Redirect back to settings screen
 		wp_redirect( esc_url_raw( add_query_arg( $query_args, MPSUM_Admin::get_url() ) ) );
 		exit;
 	}
-	
+
 	/**
 	* Output the HTML interface for the advanced tab.
 	*
 	* Output the HTML interface for the advanced tab.
 	*
-	* @since 5.0.0 
+	* @since 5.0.0
 	* @access public
 	* @see __construct
 	* @internal Uses the mpsum_admin_tab_main action
 	*/
 	public function tab_output() {
-    	
-		if ( isset( $_GET[ 'updated' ] ) ) {    
-    		$action = isset( $_GET[ 'mpaction' ] ) ? $_GET[ 'mpaction' ] : '';		
+
+		if ( isset( $_GET[ 'updated' ] ) ) {
+    		$action = isset( $_GET[ 'mpaction' ] ) ? $_GET[ 'mpaction' ] : '';
             switch( $action ) {
                 case 'mpsum_save_excluded_users':
                     $message = __( 'The exclusion of users option has been updated.', 'stops-core-theme-and-plugin-updates' );
@@ -154,6 +166,12 @@ class MPSUM_Admin_Advanced {
                     break;
                 case 'mpsum_force_updates':
                     $message = __( 'Force update checks have been initialized. Please check your site in 90 seconds, and refresh to test automatic updates.', 'stops-core-theme-and-plugin-updates' );
+                    break;
+                case 'mpsum_disable_git_checkout':
+                    $message = __( 'Wordpress checking for version control disabled. Now auto updates will perform anyway.', 'stops-core-theme-and-plugin-updates' );
+                    break;
+                case 'mpsum_enable_git_checkout':
+                    $message = __( 'Wordpress checking for version control enabled. Now if site is under version control, auto updates will be disabled.', 'stops-core-theme-and-plugin-updates' );
                     break;
                 case 'mpsum_enable_logs':
                     $message = __( 'Logs are now enabled', 'stops-core-theme-and-plugin-updates' );
@@ -166,15 +184,15 @@ class MPSUM_Admin_Advanced {
                     break;
                 default:
                     $message = __( 'Options saved.', 'stops-core-theme-and-plugin-updates' );
-                	break;	
+                	break;
             }
-    		
+
 			?>
 			<br />
 			<div class="updated"><p><strong><?php echo esc_html( $message ); ?></strong></p></div>
 			<?php
 		}
-		
+
 		?>
         <form action="<?php echo esc_url( add_query_arg( array() ) ); ?>" method="post">
 		<h3><?php esc_html_e( 'Exclude Users', 'stops-core-theme-and-plugin-updates' ); ?></h3>
@@ -191,7 +209,7 @@ class MPSUM_Admin_Advanced {
 							global $wpdb;
 							$logins = implode( "', '", get_super_admins() );
 							$users = $wpdb->get_col( "SELECT ID FROM $wpdb->users WHERE user_login IN ('$logins') GROUP BY user_login" );
-						
+
 						} else {
 							/**
 							* Determine which role gets queried for admin users.
@@ -203,7 +221,7 @@ class MPSUM_Admin_Advanced {
 							* @param string  $var administrator.
 							*/
 							$role = apply_filters( 'mpsum_admin_role', 'administrator' );
-							$users = get_users( array( 'role' => $role, 'orderby' => 'display_name', 'order' => 'ASC', 'fields' => 'ID' ) );	
+							$users = get_users( array( 'role' => $role, 'orderby' => 'display_name', 'order' => 'ASC', 'fields' => 'ID' ) );
 						}
 						if ( is_array( $users ) && !empty( $users ) ) {
 							echo '<input type="hidden" value="0" name="mpsum_excluded_users[]" />';
@@ -243,7 +261,7 @@ class MPSUM_Admin_Advanced {
 			?>
 			<div class="mpsum-error"><p><strong><?php esc_html_e( 'Automatic updates are disabled. Please check your wp-config.php file for AUTOMATIC_UPDATER_DISABLED and remove the line.' ); ?> </strong></p></div>
 			<?php
-		}	
+		}
 		if ( defined( 'WP_AUTO_UPDATE_CORE' ) && false == WP_AUTO_UPDATE_CORE ) {
 			?>
 			<div class="mpsum-error"><p><strong><?php esc_html_e( 'Automatic updates for Core are disabled. Please check your wp-config.php file for WP_AUTO_UPDATE_CORE and remove the line.' ); ?> </strong></p></div>
@@ -259,8 +277,29 @@ class MPSUM_Admin_Advanced {
 		echo '</p>';
 		?>
         </form>
+
+        <form action="<?php echo esc_url( add_query_arg( array() ) ); ?>" method="post">
+            <?php wp_nonce_field( 'mpsum_force_git', '_mpsum' ); ?>
+    				<h3><?php echo esc_html( _x( 'Foce update even if git ditected', 'Advanced title heading', 'stops-core-theme-and-plugin-updates' ) ); ?></h3>
+    				<p><?php _e( 'This will auto updates, even if site was under version control (GIT).', 'stops-core-theme-and-plugin-updates', 'stops-core-theme-and-plugin-updates' );?></p>
+    				<input type="hidden" name="action" value='mpsum_disable_git_checkout' />
+    				<p class="submit">
+								<?php
+				        $options = MPSUM_Updates_Manager::get_options( 'core' );
+				        if ( !isset( $options[ 'wp_vcs_checkout' ] ) || 'off' == $options[ 'wp_vcs_checkout' ] ):
+		         				submit_button( __( 'Disable git checkout', 'stops-core-theme-and-plugin-updates' ), 'primary', 'disable-git-checkout', false );
+								else: ?>
+
+		              	<?php wp_nonce_field( 'mpsum_force_git', '_mpsum' ); ?>
+		        				<input type="hidden" name="action" value='mpsum_enable_git_checkout' />
+										<?php
+										submit_button( __( 'Enable git checkout', 'stops-core-theme-and-plugin-updates' ) , 'delete', 'enable-git-checkout', false );
+								endif; ?>
+    				</p>
+        </form>
+
         <?php
-        $options = MPSUM_Updates_Manager::get_options( 'core' );
+				$options = MPSUM_Updates_Manager::get_options( 'core' );
         if ( !isset( $options[ 'logs' ] ) || 'off' == $options[ 'logs' ] ):
         ?>
             <form action="<?php echo esc_url( add_query_arg( array() ) ); ?>" method="post">
@@ -283,7 +322,7 @@ class MPSUM_Admin_Advanced {
             	echo '<p><em>' . __( 'This will clear the log table.', 'stops-core-theme-and-plugin-updates' ) . '</em></p>';
                 echo '<p class="submit">';
         		submit_button( __( 'Clear Logs', 'stops-core-theme-and-plugin-updates' ) , 'primary', 'clear-log', false );
-        		echo '</p>';	
+        		echo '</p>';
                 ?>
             </form>
             <form action="<?php echo esc_url( add_query_arg( array() ) ); ?>" method="post">
@@ -293,7 +332,7 @@ class MPSUM_Admin_Advanced {
                 echo '<p><em>' . __( 'This will remove the log table and disable logging.', 'stops-core-theme-and-plugin-updates' ) . '</em></p>';
                 echo '<p class="submit">';
         		submit_button( __( 'Disable Logging', 'stops-core-theme-and-plugin-updates' ) , 'delete', 'delete-log', false );
-        		echo '</p>';	
+        		echo '</p>';
                 ?>
             </form>
         <?php
