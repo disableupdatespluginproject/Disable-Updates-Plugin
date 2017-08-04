@@ -376,7 +376,6 @@ class MPSUM_Disable_Updates {
 	/**
 	* Enable or disable wordpress check for version control detection.
 	*
-	* @since 6.4.0
 	* @access public
 	* @see __construct
 	* @internal uses automatic_updates_is_vcs_checkout filter
