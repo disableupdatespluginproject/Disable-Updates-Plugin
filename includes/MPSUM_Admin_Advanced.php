@@ -280,20 +280,20 @@ class MPSUM_Admin_Advanced {
 
         <form action="<?php echo esc_url( add_query_arg( array() ) ); ?>" method="post">
             <?php wp_nonce_field( 'mpsum_force_git', '_mpsum' ); ?>
-    				<h3><?php echo esc_html( _x( 'Force update even if GIT detected', 'Advanced title heading', 'stops-core-theme-and-plugin-updates' ) ); ?></h3>
-    				<p><?php _e( 'This will auto update, even if site is under version control (GIT).', 'stops-core-theme-and-plugin-updates', 'stops-core-theme-and-plugin-updates' );?></p>
+    				<h3><?php echo esc_html( _x( 'Force update even if Git detected', 'Advanced title heading', 'stops-core-theme-and-plugin-updates' ) ); ?></h3>
+    				<p><?php _e( 'This will auto update, even if site is under version control (Git).', 'stops-core-theme-and-plugin-updates', 'stops-core-theme-and-plugin-updates' );?></p>
     				<input type="hidden" name="action" value='mpsum_disable_git_checkout' />
     				<p class="submit">
 								<?php
 				        $options = MPSUM_Updates_Manager::get_options( 'core' );
 				        if ( !isset( $options[ 'wp_vcs_checkout' ] ) || 'off' == $options[ 'wp_vcs_checkout' ] ):
-		         				submit_button( __( 'Disable GIT override', 'stops-core-theme-and-plugin-updates' ), 'primary', 'disable-git-checkout', false );
+		         				submit_button( __( 'Disable Git override', 'stops-core-theme-and-plugin-updates' ), 'primary', 'disable-git-checkout', false );
 								else: ?>
 
 		              	<?php wp_nonce_field( 'mpsum_force_git', '_mpsum' ); ?>
 		        				<input type="hidden" name="action" value='mpsum_enable_git_checkout' />
 										<?php
-										submit_button( __( 'Enable GIT override', 'stops-core-theme-and-plugin-updates' ) , 'delete', 'enable-git-checkout', false );
+										submit_button( __( 'Enable Git override', 'stops-core-theme-and-plugin-updates' ) , 'delete', 'enable-git-checkout', false );
 								endif; ?>
     				</p>
         </form>
